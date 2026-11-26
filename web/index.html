@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>出题机 · 算法题工作台</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/vendor/markdown-it.js" defer></script>
+    <script src="/vendor/katex.js" defer></script>
+    <script src="/vendor/fflate.js" defer></script>
+    <script src="/app.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="frame header-row">
+            <div class="brand"><span class="brand-mark" aria-hidden="true">&lt;/&gt;</span> 出题机</div>
+            <span class="local-label"><span></span>本地工作台</span>
+        </div>
+    </header>
+
+    <main class="frame">
+        <div class="intro">
+            <h1>算法题工作台</h1>
+            <p>用已有草稿生成可预览、可导出的出题包。</p>
+        </div>
+
+        <div class="workspace">
+            <form class="card form-card" id="generator">
+                <div class="card-heading">
+                    <h2>生成材料</h2>
+                </div>
+                <div class="form-content">
+                    <fieldset class="field">
+                        <legend>API 服务</legend>
+                        <div class="segments">
+                            <label><input type="radio" name="provider" value="openai" checked><span>OpenAI</span></label>
+                            <label><input type="radio" name="provider" value="deepseek"><span>DeepSeek</span></label>
+                        </div>
+                    </fieldset>
+
+                    <div class="field">
+                        <div class="key-label">
+                            <label for="api-key">API Key</label>
+                            <button class="key-upload" id="upload-key" type="button">从文本文件读取</button>
+                        </div>
+                        <input id="key-file" type="file" accept=".txt,text/plain" hidden>
+                        <div class="key-field">
+                            <input type="password" id="api-key" autocomplete="off" spellcheck="false" required placeholder="粘贴所选服务的 API Key" aria-describedby="key-hint">
+                            <button class="text-button" id="toggle-key" type="button" aria-pressed="false">显示</button>
+                        </div>
+                        <p class="hint" id="key-hint">仅用于请求所选 API，不保存到项目文件。</p>
+                    </div>
+
+                    <div class="material field" id="draft-material">
+                        <label for="draft">题目草稿</label>
+                        <textarea id="draft" rows="5" placeholder="粘贴已有题意、输入输出格式或数据范围……" aria-describedby="draft-hint"></textarea>
+                        <div class="upload-row">
+                            <button class="button secondary compact" type="button" data-upload="draft-files">上传文件</button>
+                            <button class="button secondary compact" type="button" data-upload="draft-folder">上传文件夹</button>
+                            <input id="draft-files" type="file" multiple accept=".md,.cpp,.txt,.in,.out" hidden>
+                            <input id="draft-folder" type="file" webkitdirectory multiple hidden>
+                        </div>
+                        <p class="hint" id="draft-hint">支持题面、题解、源码和已有测试数据。</p>
+                        <ul class="file-list" id="draft-list" aria-label="题目上传文件"></ul>
+                    </div>
+
+                    <div class="material field" id="example-material">
+                        <label for="example">参考题目 <span class="optional">可选</span></label>
+                        <textarea id="example" rows="3" placeholder="粘贴希望参考的题面，或上传完整题目文件夹。" aria-describedby="example-hint"></textarea>
+                        <div class="upload-row">
+                            <button class="button secondary compact" type="button" data-upload="example-files">上传文件</button>
+                            <button class="button secondary compact" type="button" data-upload="example-folder">上传文件夹</button>
+                            <input id="example-files" type="file" multiple accept=".md,.cpp,.txt,.in,.out" hidden>
+                            <input id="example-folder" type="file" webkitdirectory multiple hidden>
+                        </div>
+                        <p class="hint" id="example-hint">参考题面的排版、题解结构和标程风格。</p>
+                        <ul class="file-list" id="example-list" aria-label="参考题上传文件"></ul>
+                    </div>
+                    <button class="button primary generate" type="submit" id="generate">生成出题包</button>
+                    <p class="notice" id="form-notice" role="status" hidden></p>
+                </div>
+            </form>
+
+            <section class="card result-card" aria-labelledby="result-title">
+                <div class="result-heading">
+                    <div>
+                        <h2 id="result-title">生成结果</h2>
+                        <p class="hint" id="result-status" role="status">等待生成</p>
+                    </div>
+                    <div class="actions">
+                        <button class="button secondary" type="button" id="copy-all" disabled>复制 JSON</button>
+                        <button class="button export" type="button" id="export-all" disabled>导出 ZIP</button>
+                    </div>
+                </div>
+                <div class="tabs" id="file-tabs" role="tablist" aria-label="生成的文件"></div>
+                <div class="result-body" id="result-body">
+                    <div class="empty" id="empty">
+                        <div class="paper-art" aria-hidden="true"><span></span><i></i><b></b></div>
+                        <h3 id="empty-title">还没有生成结果</h3>
+                        <p id="empty-text">填写 API Key 和题目草稿后即可生成。</p>
+                    </div>
+                    <div id="file-panel" role="tabpanel" hidden>
+                        <div class="file-toolbar">
+                            <span id="filename" class="filename"></span>
+                            <div class="actions">
+                                <button class="button secondary compact" id="view-source" type="button">查看源码</button>
+                                <button class="button secondary compact" id="copy-file" type="button">复制文件</button>
+                                <button class="button secondary compact" id="export-file" type="button">下载文件</button>
+                            </div>
+                        </div>
+                        <article class="markdown" id="rendered" aria-label="Markdown 预览"></article>
+                        <pre class="source" id="source" tabindex="0" hidden></pre>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

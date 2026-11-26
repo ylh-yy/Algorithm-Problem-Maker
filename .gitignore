@@ -1,0 +1,20 @@
+/bin/
+/in.json
+/out.json
+
+# 本地题目和生成结果
+/problems/*
+!/problems/example/
+
+# 本地编译产物
+*.exe
+*.o
+*.obj
+*.pdb
+
+# 本地密钥和配置
+.env
+.env.*
+*.key
+api-key.txt
+api_key.txt
